@@ -101,9 +101,22 @@ def go(assets, start_dt, end_dt):
         ).interactive()
         chart2.altair_chart(base, use_container_width=True)
 
+        # risk chart
+
+        base = alt.Chart(df_assets,
+                         title = alt.TitleParams('Risk Chart', anchor='middle')
+        ).mark_circle(
+            size=100
+        ).encode(
+            alt.X('vols').axis(title='Volatilidade (anualizada)'),
+            alt.Y('ret').axis(title='Retorno Total'),
+            color='symbol',
+            #color = alt.datum.ret/alt.datum.volts,
+            tooltip=['symbol', 'vols', 'ret']
+        ).interactive()
+        st.altair_chart(base, use_container_width=True)
+
         st.write(df_assets)
-
-
 
     else:
         header.warning('Nenhum ativo selecionado')
