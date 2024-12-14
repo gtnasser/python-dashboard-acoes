@@ -7,6 +7,8 @@ import random
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
+import altair as alt
+
 # define global data
 
 symbols = ['SBSP3','CPLE6','RENT3','VALE3','EQTL3','ITUB4','MELI34','PRIO3']
@@ -44,8 +46,18 @@ def go(assets, start_dt, end_dt):
         print(f'* go: selected=({assets}) ')
         tickers = get_fake_tickers(assets, start_dt, end_dt)
 
-        # grafico de cotacoes
-        chart1.write(tickers)
+        # price chart / grafico de cotacoes
+
+        base = alt.Chart(tickers,
+                         title = alt.TitleParams('Price Chart') #, anchor='middle')
+        ).mark_line().encode(
+            alt.Y('price:Q').axis(title=None),
+            alt.X('ticker').axis(title=None),
+            color=alt.Color('symbol:N',
+                            legend=alt.Legend(orient='bottom'))
+        ).transform_filter(alt.datum.symbol != '^BVSP')
+        chart1.altair_chart(base, use_container_width=True)
+
 
     else:
         header.warning('Nenhum ativo selecionado')
