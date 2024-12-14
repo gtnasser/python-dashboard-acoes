@@ -9,6 +9,9 @@ from dateutil.relativedelta import relativedelta
 
 import altair as alt
 
+import yfinance as yf
+
+
 # define global data
 
 symbols = ['SBSP3','CPLE6','RENT3','VALE3','EQTL3','ITUB4','MELI34','PRIO3']
@@ -19,6 +22,7 @@ print('--------------------------')
 def get_fake_tickers(assets, start_dt, end_dt):
     """ Create sample data """
     print(f'** get_fake_tickers({assets},{start_dt},{end_dt}) ')
+
     tickers = pd.DataFrame()
     for asset in assets:
         dth = pd.date_range(start_dt.strftime('%m/%d/%Y 00:00:00'), end_dt.strftime('%m/%d/%Y 23:59:59'), freq='60min')
@@ -29,7 +33,20 @@ def get_fake_tickers(assets, start_dt, end_dt):
         })
         more_tickers['symbol'] = asset
         tickers = pd.concat([tickers, more_tickers])
+
     return tickers
+
+def get_yf_tickers(assets, start_dt, end_dt):
+    """ Read data from YFinance API """
+    print(f'** get_yf_tickers({assets},{start_dt},{end_dt}) ')
+
+    assets_sa = [t+".SA" for t in assets]
+    prices = yf.download(assets_sa, start=start_dt, end=end_dt)["Adj Close"]
+    prices['ticker'] = prices.index
+    prices_unpivot = pd.melt(prices, id_vars='ticker', value_vars=assets_sa)
+    prices_unpivot.columns = ['ticker','symbol','price']
+
+    return prices_unpivot
 
 
 def go(assets, start_dt, end_dt):
@@ -44,7 +61,7 @@ def go(assets, start_dt, end_dt):
     if len(assets) > 0:
         header.success(f'Ativos secionados:   {assets}')
         print(f'* go: selected=({assets}) ')
-        tickers = get_fake_tickers(assets, start_dt, end_dt)
+        tickers = get_yf_tickers(assets, start_dt, end_dt)
 
         # price chart / grafico de cotacoes
 
